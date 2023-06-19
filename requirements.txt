@@ -1,0 +1,11 @@
+torch
+torchaudio
+numpy
+scipy
+scikit-learn
+tqdm
+opencv-python
+torchvision
+youtube-dl
+tensorboard
+python_speech_features
