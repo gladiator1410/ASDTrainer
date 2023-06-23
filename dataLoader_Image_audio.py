@@ -167,21 +167,26 @@ class train_loader(object):
 
 
 class val_loader(object):
-    def __init__(self, trialFileName, audioPath, visualPath, datasetPath, **kwargs):
+    def __init__(self, trialFileName, audioPath, visualPath, datasetPath, loadAudioSeconds, loadNumImages, **kwargs):
+        trialFileName = trialFileName.replace('loader', 'labels')
+        audioPath = audioPath.replace('clips', 'orig')
         self.audioPath  = audioPath
         self.visualPath = visualPath
         self.miniBatch = open(trialFileName).read().splitlines()
+        self.miniBatch = self.miniBatch[1:]
+        self.sampleAudioLength = loadAudioSeconds
+        self.sampleNumImages = loadNumImages
 
         self.dataPathAVA = datasetPath
 
     def __getitem__(self, index):
-        line       = [self.miniBatch[index]]
-        numFrames  = int(line[0].split('\t')[1])
-        audioSet, noiseCategory   = generate_audio_set(self.audioPath, line)        
-        data = line[0].split('\t')
-        audioFeatures = [load_audio(data, self.audioPath, numFrames, audioSet = audioSet)]
-        visualFeatures = [load_visual(data, self.visualPath,numFrames, visualAug = False)]
-        labels = [load_label(data, numFrames)]         
+        line       = self.miniBatch[index]
+        #numFrames  = int(line[0].split('\t')[1])
+        audio   = generate_audio_set(self.audioPath, line, self.sampleAudioLength)        
+        data = line.split(',')
+        audioFeatures = [load_audio(data, self.audioPath, audio = audio)]
+        visualFeatures = [load_visual(data, self.visualPath,self.sampleNumImages, visualAug = False)]
+        labels = [load_label(data)]         
         return torch.FloatTensor(numpy.array(audioFeatures)), torch.FloatTensor(numpy.array(visualFeatures)), torch.LongTensor(numpy.array(labels))
 
     def __len__(self):
