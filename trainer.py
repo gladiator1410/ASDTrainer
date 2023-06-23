@@ -11,7 +11,7 @@ def parser():
     args.add_argument('--lrDecay', type=float, default=0.95, help='Learning rate decay rate')
     args.add_argument('--maxEpoch', type=int, default=25, help='Maximum number of epochs')
     args.add_argument('--testInterval', type=int, default=1, help='Test and save every [testInterval] epochs')
-    args.add_argument('--batchSize', type=int, default=500, help='Dynamic batch size, default is 500 frames.')
+    args.add_argument('--batchSize', type=int, default=32, help='Dynamic batch size, default is 500 frames.')
     args.add_argument('--nDataLoaderThread', type=int, default=4, help='Number of loader threads')
     args.add_argument('--datasetPath', type=str, default="/mnt/data/datasets/AVDIAR_ASD/", help='Path to the ASD Dataset')
     args.add_argument('--loadAudioSeconds', type=float, default=2, help='Number of seconds of audio to load for each training sample')
@@ -29,13 +29,13 @@ def main(args):
                           audioPath      = os.path.join(args.datasetPath , 'clips_audios/train'), \
                           visualPath     = os.path.join(args.datasetPath, 'clips_videos/train'), \
                           **vars(args))
-    trainLoader = torch.utils.data.DataLoader(loader, batch_size = 1, shuffle = True, num_workers = args.nDataLoaderThread)
+    trainLoader = torch.utils.data.DataLoader(loader, batch_size = args.batchSize, shuffle = True, num_workers = args.nDataLoaderThread)
 
     loader = val_loader(trialFileName = os.path.join(args.datasetPath, 'csv/val_loader.csv'), \
                         audioPath     = os.path.join(args.datasetPath , 'clips_audios', args.evalDataType), \
                         visualPath    = os.path.join(args.datasetPath, 'clips_videos', args.evalDataType), \
                         **vars(args))
-    valLoader = torch.utils.data.DataLoader(loader, batch_size = 1, shuffle = False, num_workers = 16)
+    valLoader = torch.utils.data.DataLoader(loader, batch_size = args.batchSize, shuffle = False, num_workers = 16)
     
     if args.evaluation == True:
         s = model(**vars(args))
