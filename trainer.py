@@ -1,7 +1,7 @@
 import os, glob, time
 import argparse
 from model import *
-from dataLoader import train_loader, val_loader
+from dataLoader_Image_audio import train_loader, val_loader
 
 def parser():
 
@@ -14,6 +14,8 @@ def parser():
     args.add_argument('--batchSize', type=int, default=500, help='Dynamic batch size, default is 500 frames.')
     args.add_argument('--nDataLoaderThread', type=int, default=4, help='Number of loader threads')
     args.add_argument('--datasetPath', type=str, default="/mnt/data/datasets/AVDIAR_ASD/", help='Path to the ASD Dataset')
+    args.add_argument('--loadAudioSeconds', type=float, default=2, help='Number of seconds of audio to load for each training sample')
+    args.add_argument('--loadNumImages', type=int, default=1, help='Number of images to load for each training sample')
     args.add_argument('--savePath', type=str, default="exps/exp1")
     args.add_argument('--evalDataType', type=str, default="val", help='The dataset for evaluation, val or test')
     args.add_argument('--evaluation', dest='evaluation', action='store_true', help='Only do evaluation')
