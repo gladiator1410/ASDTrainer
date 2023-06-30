@@ -62,11 +62,12 @@ def load_audio(data, dataPath, audio = None):
 def load_visual(data, dataPath, numImages, visualAug): 
     dataName = data[0]
     videoName = data[0]
-    faceFolderPath = os.path.join(dataPath, videoName, dataName)
+    entityID = data[7]
+    faceFolderPath = os.path.join(dataPath, videoName, entityID)
     faceFiles = glob.glob("%s/*.jpg"%faceFolderPath)
     sortedFaceFiles = sorted(faceFiles, key=lambda data: (float(data.split('/')[-1][:-4])), reverse=False) 
     numFaceFiles = len(sortedFaceFiles)
-    currentFaceFilePath = os.path.join(faceFolderPath, ".2f"%float(data[1]))
+    currentFaceFilePath = os.path.join(faceFolderPath, "%.2f"%float(data[1])+".jpg")
     halfNumImages = numImages // 2
 
     shortage = 0
@@ -148,22 +149,22 @@ class train_loader(object):
     def __getitem__(self, index):
         # batchList    = self.miniBatch[index]
         # numFrames   = int(batchList[-1].split('\t')[1])
-        audioFeatures, visualFeatures, labels = [], [], []
+        #audioFeatures, visualFeatures, labels = [], [], []
         line = self.mixLst[index]
         #audioSet = generate_audio_set(self.audioPath, batchList) # load the audios in this batch to do augmentation
         audio = generate_audio_set(self.audioPath, line, self.sampleAudioLength) # load the audios in this batch to do augmentation
         #for line in batchList:
         data = line.split(',')            
-        audioFeatures.append(load_audio(data, self.audioPath, audio=audio))  
-        visualFeatures.append(load_visual(data, self.visualPath, self.sampleNumImages, visualAug = True))
-        labels.append(load_label(data))
+        audioFeatures = load_audio(data, self.audioPath, audio=audio)  
+        visualFeatures = load_visual(data, self.visualPath, self.sampleNumImages, visualAug = True)
+        labels = load_label(data)
         #print(numpy.array(audioFeatures).shape, numpy.array(visualFeatures).shape, numpy.array(labels).shape)
-        return torch.FloatTensor(numpy.array(audioFeatures)), \
-               torch.FloatTensor(numpy.array(visualFeatures)), \
-               torch.LongTensor(numpy.array(labels))        
+        return torch.FloatTensor(audioFeatures), \
+               torch.FloatTensor(visualFeatures), \
+               torch.LongTensor(labels)        
 
     def __len__(self):
-        return len(self.miniBatch)
+        return len(self.mixLst)
 
 
 class val_loader(object):
@@ -184,10 +185,10 @@ class val_loader(object):
         #numFrames  = int(line[0].split('\t')[1])
         audio   = generate_audio_set(self.audioPath, line, self.sampleAudioLength)        
         data = line.split(',')
-        audioFeatures = [load_audio(data, self.audioPath, audio = audio)]
-        visualFeatures = [load_visual(data, self.visualPath,self.sampleNumImages, visualAug = False)]
-        labels = [load_label(data)]         
-        return torch.FloatTensor(numpy.array(audioFeatures)), torch.FloatTensor(numpy.array(visualFeatures)), torch.LongTensor(numpy.array(labels))
+        audioFeatures = load_audio(data, self.audioPath, audio = audio)
+        visualFeatures = load_visual(data, self.visualPath,self.sampleNumImages, visualAug = False)
+        labels = load_label(data)         
+        return torch.FloatTensor(audioFeatures), torch.FloatTensor(visualFeatures), torch.LongTensor(labels)
 
     def __len__(self):
         return len(self.miniBatch)
